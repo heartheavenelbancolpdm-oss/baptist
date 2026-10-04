@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KJV Bible Presentation</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">✝</div>
+        <div>
+          <strong>KJV Bible</strong>
+          <span>Presentation</span>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="section-label">NAVIGATION</div>
+        <button class="side-button active" data-view="searchView">
+          <span>⌕</span> Scripture Search
+        </button>
+        <button class="side-button" data-view="booksView">
+          <span>▤</span> Books
+        </button>
+        <button class="side-button" data-view="recentView">
+          <span>↺</span> Recent
+        </button>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="section-label">QUICK REFERENCES</div>
+        <div id="quickRefs" class="quick-list"></div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="connection-dot" id="connectionDot"></div>
+        <div>
+          <strong id="connectionText">TV window not open</strong>
+          <span>HDMI presentation</span>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow">CHURCH PRESENTATION SYSTEM</div>
+          <h1>Scripture Control</h1>
+        </div>
+
+        <div class="topbar-actions">
+          <div class="search-box">
+            <span>⌕</span>
+            <input id="searchInput" type="text"
+              placeholder="Search reference — e.g. John 3:16"
+              autocomplete="off">
+            <kbd>ENTER</kbd>
+          </div>
+          <button id="openPresentationBtn" class="outline-button">Open TV</button>
+        </div>
+      </header>
+
+      <section class="workspace">
+
+        <section id="searchView" class="content-view active-view">
+          <div class="workspace-grid">
+
+            <section class="preview-column">
+              <div class="panel-heading">
+                <div>
+                  <span class="status-badge preview-badge">PREVIEW</span>
+                  <h2 id="previewReference">No verse selected</h2>
+                </div>
+                <span id="previewPosition" class="muted">Select a result to preview</span>
+              </div>
+
+              <div class="preview-stage">
+                <div class="preview-watermark">KJV</div>
+                <div class="scripture-preview empty" id="previewText">
+                  <div class="empty-icon">✝</div>
+                  <h3>Ready for Scripture</h3>
+                  <p>Search for a Bible reference, then select a verse to prepare it for the screen.</p>
+                </div>
+                <div class="preview-footer">
+                  <span>KING JAMES VERSION</span>
+                  <span id="previewHint">Preview only — TV will not change</span>
+                </div>
+              </div>
+
+              <div class="control-bar">
+                <button id="previousBtn" class="control-button" title="Previous preview verse">
+                  <span>←</span> Previous
+                </button>
+                <button id="nextBtn" class="control-button" title="Next preview verse">
+                  Next <span>→</span>
+                </button>
+                <div class="control-spacer"></div>
+                <button id="fontDownBtn" class="icon-button" title="Decrease presentation font">A−</button>
+                <span id="fontSizeLabel" class="font-label">42px</span>
+                <button id="fontUpBtn" class="icon-button" title="Increase presentation font">A+</button>
+              </div>
+
+              <div class="live-action-row">
+                <div class="live-status-card">
+                  <span class="live-dot"></span>
+                  <div>
+                    <span class="small-label">CURRENTLY LIVE</span>
+                    <strong id="liveReference">Nothing live</strong>
+                  </div>
+                </div>
+                <button id="sendLiveBtn" class="send-live-button" disabled>
+                  <span>▶</span> SEND LIVE
+                </button>
+                <button id="blankBtn" class="dark-button" title="Blank the TV screen">
+                  <span>■</span> BLACK
+                </button>
+              </div>
+            </section>
+
+            <aside class="results-column">
+              <div class="results-header">
+                <div>
+                  <span class="eyebrow">SEARCH</span>
+                  <h2>Results</h2>
+                </div>
+                <span id="resultCount" class="result-count">0</span>
+              </div>
+
+              <div id="searchSummary" class="search-summary">
+                Search a reference to begin.
+              </div>
+
+              <div id="resultsList" class="results-list">
+                <div class="results-empty">
+                  <div class="empty-icon small">⌕</div>
+                  <strong>Search Scripture</strong>
+                  <p>Examples: <b>John 3:16</b>, <b>Psalm 23</b>, <b>Romans 8:28-30</b></p>
+                </div>
+              </div>
+            </aside>
+
+          </div>
+        </section>
+
+        <section id="booksView" class="content-view">
+          <div class="page-header">
+            <div>
+              <span class="eyebrow">BIBLE LIBRARY</span>
+              <h2>Books of the Bible</h2>
+              <p>Select a book to load its chapter list.</p>
+            </div>
+          </div>
+          <div class="books-layout">
+            <div>
+              <div class="book-group-title">OLD TESTAMENT</div>
+              <div id="oldTestament" class="book-grid"></div>
+            </div>
+            <div>
+              <div class="book-group-title">NEW TESTAMENT</div>
+              <div id="newTestament" class="book-grid"></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="recentView" class="content-view">
+          <div class="page-header">
+            <div>
+              <span class="eyebrow">HISTORY</span>
+              <h2>Recent References</h2>
+              <p>Your recent searches are stored locally in this browser.</p>
+            </div>
+            <button id="clearRecentBtn" class="outline-button">Clear</button>
+          </div>
+          <div id="recentList" class="recent-list"></div>
+        </section>
+
+      </section>
+
+      <footer class="app-footer">
+        <span><b>Preview</b> does not affect the TV.</span>
+        <span>Ctrl + Enter = Send Live</span>
+        <span>← / → = Navigate</span>
+        <span>B = Black</span>
+        <span>F = TV Fullscreen</span>
+      </footer>
+    </main>
+  </div>
+
+  <div id="toast" class="toast"></div>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KJV Presentation Screen</title>
+  <style>
+    :root {
+      --font-size: 54px;
+      --gold: #d9b66f;
+      --text: #faf7ef;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+    }
+
+    body {
+      color: var(--text);
+      font-family: Georgia, "Times New Roman", serif;
+      user-select: none;
+    }
+
+    .screen {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background:
+        radial-gradient(circle at 50% 15%, rgba(217,182,111,.055), transparent 35%),
+        #000;
+      transition: opacity .22s ease;
+    }
+
+    .screen.black { opacity: 0; }
+
+    .content {
+      width: min(90vw, 1500px);
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    .verse {
+      max-width: 1450px;
+      font-size: var(--font-size);
+      line-height: 1.55;
+      letter-spacing: .005em;
+      text-wrap: balance;
+      text-shadow: 0 2px 18px rgba(0,0,0,.45);
+    }
+
+    .reference {
+      margin-top: 34px;
+      font-family: Arial, sans-serif;
+      font-size: clamp(18px, 2vw, 29px);
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: .025em;
+    }
+
+    .version {
+      margin-top: 10px;
+      font-family: Arial, sans-serif;
+      color: rgba(255,255,255,.38);
+      font-size: clamp(9px, .8vw, 13px);
+      letter-spacing: .22em;
+      font-weight: 700;
+    }
+
+    .waiting {
+      color: rgba(255,255,255,.25);
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+
+    .waiting .cross {
+      color: rgba(217,182,111,.4);
+      font-size: 46px;
+      margin-bottom: 16px;
+    }
+
+    .waiting h1 {
+      font-size: 20px;
+      font-weight: 500;
+      margin: 0 0 8px;
+    }
+
+    .waiting p {
+      font-size: 12px;
+      margin: 0;
+    }
+
+    .top-corner {
+      position: fixed;
+      top: 22px;
+      right: 26px;
+      color: rgba(255,255,255,.12);
+      font-family: Arial, sans-serif;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .18em;
+    }
+
+    @media (max-aspect-ratio: 4/3) {
+      .verse {
+        font-size: clamp(32px, 5vw, var(--font-size));
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="screen" id="screen">
+    <div class="top-corner">KJV</div>
+
+    <main class="content">
+      <div id="display">
+        <div class="waiting">
+          <div class="cross">✝</div>
+          <h1>Waiting for Scripture</h1>
+          <p>Use the control screen to send a verse live.</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    let liveVerse = null;
+    let blanked = false;
+
+    const screen = document.getElementById("screen");
+    const display = document.getElementById("display");
+
+    function escapeHTML(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function showLive(payload) {
+      if (!payload) return;
+
+      liveVerse = payload;
+      blanked = false;
+      screen.classList.remove("black");
+
+      const size = Math.max(28, Math.min(90, Number(payload.fontSize) || 54));
+      document.documentElement.style.setProperty("--font-size", `${size}px`);
+
+      display.innerHTML = `
+        <div class="verse">${escapeHTML(payload.text)}</div>
+        <div class="reference">${escapeHTML(payload.book)} ${escapeHTML(payload.chapter)}:${escapeHTML(payload.verse)}</div>
+        <div class="version">KING JAMES VERSION</div>
+      `;
+    }
+
+    function blank() {
+      blanked = true;
+      screen.classList.add("black");
+    }
+
+    function restore() {
+      if (!liveVerse) return;
+      showLive(liveVerse);
+    }
+
+    async function goFullscreen() {
+      try {
+        if (!document.fullscreenElement) {
+          await document.documentElement.requestFullscreen();
+        }
+      } catch (error) {
+        console.warn("Fullscreen was not allowed:", error);
+      }
+    }
+
+    window.addEventListener("message", event => {
+      const data = event.data || {};
+
+      if (data.type === "KJV_LIVE_UPDATE") {
+        showLive(data.payload);
+      }
+
+      if (data.type === "KJV_BLANK") {
+        blank();
+      }
+
+      if (data.type === "KJV_RESTORE") {
+        restore();
+      }
+
+      if (data.type === "KJV_FONT_UPDATE" && data.payload?.fontSize) {
+        document.documentElement.style.setProperty(
+          "--font-size",
+          `${Math.max(28, Math.min(90, Number(data.payload.fontSize)))}px`
+        );
+      }
+
+      if (data.type === "KJV_FULLSCREEN") {
+        goFullscreen();
+      }
+    });
+
+    window.addEventListener("beforeunload", () => {
+      if (window.opener && !window.opener.closed) {
+        window.opener.postMessage({ type: "KJV_PRESENTATION_CLOSED" }, "*");
+      }
+    });
+
+    if (window.opener && !window.opener.closed) {
+      window.opener.postMessage({ type: "KJV_PRESENTATION_READY" }, "*");
+    }
+
+    document.addEventListener("dblclick", goFullscreen);
+    document.addEventListener("keydown", event => {
+      if (event.key.toLowerCase() === "f") goFullscreen();
+      if (event.key.toLowerCase() === "b") blank();
+      if (event.key === "Escape" && blanked) restore();
+    });
+  </script>
+</body>
+</html>
